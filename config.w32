@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("pdoner", "for pdoner support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("pdoner", "enable pdoner support", "no");
+
+if (PHP_PDONER != "no") {
+	EXTENSION("pdoner", "pdoner.c");
+}
+
