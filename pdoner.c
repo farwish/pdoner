@@ -32,7 +32,21 @@
 static int le_pdoner;
 
 
-/* {{{ proto int random_id([int salt = 0])
+zend_class_entry *errs_ce;
+
+/* {{{ ARG_INFO
+*/
+ZEND_BEGIN_ARG_INFO_EX(errs_get_arginfo, 0, 0, 1)
+	ZEND_ARG_INFO(0, code)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(errs_set_arginfo, 0, 0, 2)
+	ZEND_ARG_INFO(0, code)
+	ZEND_ARG_INFO(0, msg)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+/* {{{ proto int random_id([int $salt = 0])
    a random id based unix timestamp */
 PHP_FUNCTION(random_id)
 {
@@ -49,33 +63,73 @@ PHP_FUNCTION(random_id)
 }
 /* }}} */
 
+/* {{{ proto public static Errs::get(int $code)
+*/
+PHP_METHOD(errs, get)
+{
+}
+/* }}} */
 
+/* {{{ proto public static Errs::set(int $code, string $msg) 
+*/
+PHP_METHOD(errs, set)
+{
+	
+}
+/* }}} */
+
+/* {{{ Errs_methods */
+zend_function_entry errs_methods[] = {
+	PHP_ME(errs, get, errs_get_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(errs, set, errs_set_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	{NULL, NULL, NULL}
+};
+/* }}} */
+
+/* {{{ PHP_MINIT_FUNCTION
+*/
 PHP_MINIT_FUNCTION(pdoner)
 {
+	zend_class_entry ce;
+	INIT_CLASS_ENTRY(ce, "errs", errs_methods);	
+	errs_ce = zend_register_internal_class(&ce TSRMLS_CC);
+
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL("SUCC"), 0 TSRMLS_CC);
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL("FAIL"), -1 TSRMLS_CC);
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL("EXCEP"), 1 TSRMLS_CC);
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL("UNKNOW"), 2 TSRMLS_CC);
+	//zend_declare_property_null(errs_ce, ZEND_STRL("msg"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+
 	return SUCCESS;
 }
+/* }}} */
 
-
+/* {{{ PHP_MSHUTDOWN_FUNCTION
+*/
 PHP_MSHUTDOWN_FUNCTION(pdoner)
 {
 	return SUCCESS;
 }
+/* }}} */
 
-
-
+/* {{{ PHP_RINIT_FUNCTION
+*/
 PHP_RINIT_FUNCTION(pdoner)
 {
 	return SUCCESS;
 }
+/* }}} */
 
-
-
+/* {{{ PHP_RSHUTDOWN_FUNCTION
+*/
 PHP_RSHUTDOWN_FUNCTION(pdoner)
 {
 	return SUCCESS;
 }
+/* }}} */
 
-
+/* {{{ PHP_MINFO_FUNCTION
+*/
 PHP_MINFO_FUNCTION(pdoner)
 {
 	php_info_print_table_start();
@@ -84,14 +138,18 @@ PHP_MINFO_FUNCTION(pdoner)
 	php_info_print_table_end();
 
 }
+/* }}} */
 
-
+/* {{{ pdoner_functions
+*/
 const zend_function_entry pdoner_functions[] = {
 	PHP_FE(random_id, NULL)
 	PHP_FE_END
 };
+/* }}} */
 
-
+/* {{{ pdoner_module_entry
+*/
 zend_module_entry pdoner_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"pdoner",
@@ -104,7 +162,7 @@ zend_module_entry pdoner_module_entry = {
 	PHP_PDONER_VERSION,
 	STANDARD_MODULE_PROPERTIES
 };
-
+/* }}} */
 
 #ifdef COMPILE_DL_PDONER
 ZEND_GET_MODULE(pdoner)
