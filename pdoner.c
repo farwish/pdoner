@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: Wei Chen <farwish@foxmail.com>                               |
   +----------------------------------------------------------------------+
 */
 
@@ -60,6 +60,36 @@ PHP_FUNCTION(random_id)
 	t = (long)time(NULL) + (long)salt;
 
 	RETURN_LONG(t);
+}
+/* }}} */
+
+/* {{{ wrapper of uniqid */
+PHP_FUNCTION(fox)
+{
+	zval *prefix, *more;
+
+	zval function, *params[2] = {0};
+
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|z", &prefix, &more) == FAILURE ) {
+		return;
+	}
+
+	params[0] = prefix;
+	if (more) {
+		params[1] = more;
+	}
+
+	ZVAL_STRING(&function, "uniqid", 0);
+
+	if ( call_user_function(EG(function_table), NULL, &function, return_value, ZEND_NUM_ARGS(), params TSRMLS_CC) == FAILURE ) {
+		if (return_value) {
+			zval_dtor(return_value);
+		}
+		zend_error(E_WARNING, "%s() calling %s() failed.", get_active_function_name(TSRMLS_C), Z_STRVAL(function));
+		RETURN_FALSE;
+	}
+
+	RETURN_STRING(Z_STRVAL_P(return_value), 0);
 }
 /* }}} */
 
@@ -144,6 +174,7 @@ PHP_MINFO_FUNCTION(pdoner)
 */
 const zend_function_entry pdoner_functions[] = {
 	PHP_FE(random_id, NULL)
+	PHP_FE(fox, NULL)
 	PHP_FE_END
 };
 /* }}} */
