@@ -28,6 +28,7 @@
 #include "php_pdoner.h"
 
 #include <time.h>
+#include <string.h>
 
 static int le_pdoner;
 
@@ -63,33 +64,40 @@ PHP_FUNCTION(random_id)
 }
 /* }}} */
 
-/* {{{ wrapper of uniqid */
-PHP_FUNCTION(fox)
+/* {{{ proto string implode_json(array $arr [, string $glue]) */
+PHP_FUNCTION(implode_json)
 {
-	zval *prefix, *more;
+	zval *pieces, *glue = NULL;
 
-	zval function, *params[2] = {0};
+	zval function_name, *params[2] = {0};
 
-	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|z", &prefix, &more) == FAILURE ) {
-		return;
-	}
-
-	params[0] = prefix;
-	if (more) {
-		params[1] = more;
-	}
-
-	ZVAL_STRING(&function, "uniqid", 0);
-
-	if ( call_user_function(EG(function_table), NULL, &function, return_value, ZEND_NUM_ARGS(), params TSRMLS_CC) == FAILURE ) {
-		if (return_value) {
-			zval_dtor(return_value);
-		}
-		zend_error(E_WARNING, "%s() calling %s() failed.", get_active_function_name(TSRMLS_C), Z_STRVAL(function));
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|z", &pieces, &glue) == FAILURE ) {
 		RETURN_FALSE;
 	}
 
-	RETURN_STRING(Z_STRVAL_P(return_value), 0);
+	ZVAL_STRING(&function_name, "implode", 0);
+
+	params[0] = pieces;
+
+	if (glue == NULL) {
+		MAKE_STD_ZVAL(glue);
+		Z_STRVAL_P(glue) = ",";
+		Z_STRLEN_P(glue) = strlen(",");
+		Z_TYPE_P(glue) = IS_STRING;
+	}
+
+	params[1] = glue;
+
+	if ( call_user_function(EG(function_table), NULL, &function_name, return_value, 2, params TSRMLS_CC) == FAILURE ) {
+		if (return_value) {
+			zval_dtor(return_value);
+		}
+		RETURN_FALSE;
+	}
+
+	char *dest = Z_STRVAL_P(return_value);
+
+	RETURN_STRING(dest, 0);
 }
 /* }}} */
 
@@ -174,7 +182,7 @@ PHP_MINFO_FUNCTION(pdoner)
 */
 const zend_function_entry pdoner_functions[] = {
 	PHP_FE(random_id, NULL)
-	PHP_FE(fox, NULL)
+	PHP_FE(implode_json, NULL)
 	PHP_FE_END
 };
 /* }}} */
