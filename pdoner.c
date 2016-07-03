@@ -47,9 +47,9 @@ ZEND_BEGIN_ARG_INFO_EX(errs_set_arginfo, 0, 0, 2)
 ZEND_END_ARG_INFO()
 /* }}} */
 
-/* {{{ proto int random_id([int $salt = 0])
+/* {{{ proto int pd_random_id([int $salt = 0])
    a random id based unix timestamp */
-PHP_FUNCTION(random_id)
+PHP_FUNCTION(pd_random_id)
 {
 	time_t t;
 	long *salt = 0;
@@ -64,8 +64,10 @@ PHP_FUNCTION(random_id)
 }
 /* }}} */
 
-/* {{{ proto string implode_json(array $arr [, string $glue]) */
-PHP_FUNCTION(implode_json)
+/* {{{ proto string pd_implode_json(array $arr [, string $glue])
+* TODO malloc and strcat optimize.
+*/
+PHP_FUNCTION(pd_implode_json)
 {
 	zval *pieces, *glue = NULL;
 
@@ -95,7 +97,15 @@ PHP_FUNCTION(implode_json)
 		RETURN_FALSE;
 	}
 
-	char *dest = Z_STRVAL_P(return_value);
+	char *src1 = "[";
+	char *ori = Z_STRVAL_P(return_value);
+	char *src2 = "]";
+
+	char *dest = (char *)malloc(1024);
+	
+	strcat(dest, src1);
+	strcat(dest, ori);
+	strcat(dest, src2);
 
 	RETURN_STRING(dest, 0);
 }
@@ -181,8 +191,8 @@ PHP_MINFO_FUNCTION(pdoner)
 /* {{{ pdoner_functions
 */
 const zend_function_entry pdoner_functions[] = {
-	PHP_FE(random_id, NULL)
-	PHP_FE(implode_json, NULL)
+	PHP_FE(pd_random_id, NULL)
+	PHP_FE(pd_implode_json, NULL)
 	PHP_FE_END
 };
 /* }}} */
