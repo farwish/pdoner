@@ -27,8 +27,6 @@
 #include "ext/standard/info.h"
 #include "php_pdoner.h"
 
-#include <time.h>
-#include <string.h>
 
 static int le_pdoner;
 
@@ -101,13 +99,35 @@ PHP_FUNCTION(pd_implode_json)
 	char *ori = Z_STRVAL_P(return_value);
 	char *src2 = "]";
 
-	char *dest = (char *)malloc(1024);
+	char *dest = (char *)emalloc(1024);
 	
 	strcat(dest, src1);
 	strcat(dest, ori);
 	strcat(dest, src2);
 
 	RETURN_STRING(dest, 0);
+}
+/* }}} */
+
+/* {{{ proto public Errs::__construct(void) */
+PHP_METHOD(errs, __construct)
+{
+	zval *self = getThis(), *running;
+	zval function_name, *params[1] = {0};
+
+	running = zend_read_property(errs_ce, self, ZEND_STRL("SUCC"), 1 TSRMLS_CC);
+
+	ZVAL_STRING(&function_name, "gettype", 0);
+	params[0] = running;
+
+	if ( call_user_function(EG(function_table), NULL, &function_name, return_value, 1, params TSRMLS_CC) == FAILURE ) {
+		if (return_value) {
+			zval_dtor(return_value);
+		}
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -128,6 +148,7 @@ PHP_METHOD(errs, set)
 
 /* {{{ Errs_methods */
 zend_function_entry errs_methods[] = {
+	PHP_ME(errs, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(errs, get, errs_get_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(errs, set, errs_set_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
@@ -146,7 +167,8 @@ PHP_MINIT_FUNCTION(pdoner)
 	zend_declare_class_constant_long(errs_ce, ZEND_STRL("FAIL"), -1 TSRMLS_CC);
 	zend_declare_class_constant_long(errs_ce, ZEND_STRL("EXCEP"), 1 TSRMLS_CC);
 	zend_declare_class_constant_long(errs_ce, ZEND_STRL("UNKNOW"), 2 TSRMLS_CC);
-	//zend_declare_property_null(errs_ce, ZEND_STRL("msg"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+
+	zend_declare_property_null(errs_ce, ZEND_STRL("msg"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 
 	return SUCCESS;
 }
