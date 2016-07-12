@@ -95,6 +95,10 @@ PHP_FUNCTION(pd_implode_json)
 		RETURN_FALSE;
 	}
 
+	// dtor after used.
+	ZVAL_NULL(glue);
+	zval_ptr_dtor(&glue);
+
 	char *src1 = "[";
 	char *ori = Z_STRVAL_P(return_value);
 	char *src2 = "]";
