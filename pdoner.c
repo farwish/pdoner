@@ -116,22 +116,16 @@ PHP_FUNCTION(pd_implode_json)
 /* {{{ proto public Errs::__construct(void) */
 PHP_METHOD(errs, __construct)
 {
-	zval *self = getThis(), *running;
-	zval function_name, *params[1] = {0};
+	zval *m;
+	MAKE_STD_ZVAL(m);	
+	array_init(m);
 
-	running = zend_read_property(errs_ce, self, ZEND_STRL("SUCC"), 1 TSRMLS_CC);
+	add_index_string(m, PDONER_ERRS_SUCC, "成功", 0);
+	add_index_string(m, PDONER_ERRS_FAIL, "失败", 0);
+	add_index_string(m, PDONER_ERRS_EXCEP, "异常", 0);
+	add_index_string(m, PDONER_ERRS_UNKNOW, "未知", 0);
 
-	ZVAL_STRING(&function_name, "gettype", 0);
-	params[0] = running;
-
-	if ( call_user_function(EG(function_table), NULL, &function_name, return_value, 1, params TSRMLS_CC) == FAILURE ) {
-		if (return_value) {
-			zval_dtor(return_value);
-		}
-		RETURN_FALSE;
-	}
-
-	RETURN_TRUE;
+	add_property_zval_ex(getThis(), PDONER_ERRS_PROPERTY_NAME_MSG, sizeof(PDONER_ERRS_PROPERTY_NAME_MSG), m TSRMLS_CC);
 }
 /* }}} */
 
@@ -167,12 +161,12 @@ PHP_MINIT_FUNCTION(pdoner)
 	INIT_CLASS_ENTRY(ce, "errs", errs_methods);	
 	errs_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL("SUCC"), 0 TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL("FAIL"), -1 TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL("EXCEP"), 1 TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL("UNKNOW"), 2 TSRMLS_CC);
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_SUCC), PDONER_ERRS_SUCC TSRMLS_CC);
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_FAIL), PDONER_ERRS_FAIL TSRMLS_CC);
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_EXCEP), PDONER_ERRS_EXCEP TSRMLS_CC);
+	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_UNKNOW), PDONER_ERRS_UNKNOW TSRMLS_CC);
 
-	zend_declare_property_null(errs_ce, ZEND_STRL("msg"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 
 	return SUCCESS;
 }
