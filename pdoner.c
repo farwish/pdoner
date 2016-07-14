@@ -99,33 +99,36 @@ PHP_FUNCTION(pd_implode_json)
 	ZVAL_NULL(glue);
 	zval_ptr_dtor(&glue);
 
-	char *src1 = "[";
-	char *ori = Z_STRVAL_P(return_value);
-	char *src2 = "]";
+	// one memory leak
+	zval op1, op2;
+	ZVAL_STRING(&op1, "[", 1);
+	ZVAL_STRING(&op2, "]", 1);
 
-	char *dest = (char *)emalloc(1024);
-	
-	strcat(dest, src1);
-	strcat(dest, ori);
-	strcat(dest, src2);
+	concat_function(&op1, &op1, return_value TSRMLS_CC);
+	concat_function(&op1, &op1, &op2 TSRMLS_CC);
 
-	RETURN_STRING(dest, 0);
+	ZVAL_ZVAL(return_value, &op1, 0, 1);
+
+	zval_dtor(&op1);
+	zval_dtor(&op2);
 }
 /* }}} */
 
 /* {{{ proto public Errs::__construct(void) */
 PHP_METHOD(errs, __construct)
 {
-	zval *m;
-	MAKE_STD_ZVAL(m);	
-	array_init(m);
+	zval *msg;
+	MAKE_STD_ZVAL(msg);	
+	array_init(msg);
 
-	add_index_string(m, PDONER_ERRS_SUCC, "成功", 0);
-	add_index_string(m, PDONER_ERRS_FAIL, "失败", 0);
-	add_index_string(m, PDONER_ERRS_EXCEP, "异常", 0);
-	add_index_string(m, PDONER_ERRS_UNKNOW, "未知", 0);
+	add_index_string(msg, PDONER_ERRS_SUCC, "成功", 1);
+	add_index_string(msg, PDONER_ERRS_FAIL, "失败", 1);
+	add_index_string(msg, PDONER_ERRS_EXCEP, "异常", 1);
+	add_index_string(msg, PDONER_ERRS_UNKNOW, "未知", 1);
 
-	add_property_zval_ex(getThis(), PDONER_ERRS_PROPERTY_NAME_MSG, sizeof(PDONER_ERRS_PROPERTY_NAME_MSG), m TSRMLS_CC);
+	zend_update_property(errs_ce, getThis(), ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC);
+
+	zval_ptr_dtor(&msg);
 }
 /* }}} */
 
@@ -166,7 +169,7 @@ PHP_MINIT_FUNCTION(pdoner)
 	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_EXCEP), PDONER_ERRS_EXCEP TSRMLS_CC);
 	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_UNKNOW), PDONER_ERRS_UNKNOW TSRMLS_CC);
 
-	zend_declare_property_null(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC TSRMLS_CC);
 
 	return SUCCESS;
 }
