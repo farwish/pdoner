@@ -41,7 +41,7 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(errs_set_arginfo, 0, 0, 2)
 	ZEND_ARG_INFO(0, code)
-	ZEND_ARG_INFO(0, msg)
+	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -62,7 +62,7 @@ PHP_FUNCTION(pd_random_id)
 }
 /* }}} */
 
-/* {{{ proto string pd_implode_json(array $arr [, string $glue])
+/* {{{ proto string pd_implode_json(array $arr [, string $glue = ','])
 * TODO malloc and strcat optimize.
 */
 PHP_FUNCTION(pd_implode_json)
@@ -139,7 +139,7 @@ PHP_METHOD(errs, get)
 }
 /* }}} */
 
-/* {{{ proto public static Errs::set(int $code, string $msg) 
+/* {{{ proto public static Errs::set(int $code, string $value) 
 */
 PHP_METHOD(errs, set)
 {

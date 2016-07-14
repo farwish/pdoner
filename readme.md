@@ -8,37 +8,38 @@ $ ./configure --with-php-config=/path/php/bin/php-config
 $ make && sudo make install
 ````
 
-## Functions
-A random id based unix timestamp.
+## Function
 
- * `int random_id([int salt = 0])`
+ * `int pd_random_id([int $salt = 0])`	// A random id based unix timestamp.
+
+ * `string pd_implode_json(array $arr [, string $glue = ','])`	// array [1=>123,2=>456] to string [123,456]
 
 ## Class
-Error define
+Error define.
 
 ```
 class Errs
 {
     const SUCC = 0;
-    const FAIL = -1; 
-    const EXCEP = 1;
-    const UNKNOW = 2;
+    const FAIL = 1; 
+    const EXCEP = 2;
+    const UNKNOW = 3;
 
-    public static $msg = [ 
+    public $msg = [ 
         self::SUCC => '成功',
         self::FAIL => '失败',
         self::EXCEP => '异常',
         self::UNKNOW => '未知',
     ];  
 
-    public static function get($name)
+    public static function get($code)
     {   
-        return self::$msg[$name];
-    }   
+        return self::$msg[$code];
+    }
 
-    public static function set($name, $value)
+    public static function set($code, $value)
     {   
-        self::$msg[$name] = $value;
-    }   
+        self::$msg[$code] = $value;
+    }
 }
 ```
