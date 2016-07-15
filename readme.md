@@ -25,12 +25,14 @@ class Errs
     const EXCEP = 2;
     const UNKNOW = 3;
 
-    public $msg = [ 
-        self::SUCC => '成功',
-        self::FAIL => '失败',
-        self::EXCEP => '异常',
-        self::UNKNOW => '未知',
-    ];  
+	public static $msg;
+
+	pubic function __construct() {
+		self::$msg[self::SUCC] = '成功';
+		self::$msg[self::FAIL] = '失败';
+		self::$msg[self::EXCEP] = '异常';
+		self::$msg[self::UNKNOW] = '未知';
+	}
 
     public static function get($code)
     {   

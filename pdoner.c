@@ -35,7 +35,7 @@ zend_class_entry *errs_ce;
 
 /* {{{ ARG_INFO
 */
-ZEND_BEGIN_ARG_INFO_EX(errs_get_arginfo, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(errs_get_arginfo, 0, 0, 0)
 	ZEND_ARG_INFO(0, code)
 ZEND_END_ARG_INFO()
 
@@ -126,16 +126,72 @@ PHP_METHOD(errs, __construct)
 	add_index_string(msg, PDONER_ERRS_EXCEP, "异常", 1);
 	add_index_string(msg, PDONER_ERRS_UNKNOW, "未知", 1);
 
-	zend_update_property(errs_ce, getThis(), ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC);
+	zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC);
 
 	zval_ptr_dtor(&msg);
 }
 /* }}} */
 
-/* {{{ proto public static Errs::get(int $code)
+/* {{{ proto public static Errs::get([int $code])
 */
 PHP_METHOD(errs, get)
 {
+	zval code;
+	zval *msg = NULL;
+
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &code) == FAILURE ) {
+		return;
+	}
+
+	// read property
+	msg = zend_read_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
+
+	// no instance
+	if (Z_ARRVAL_P(msg) == NULL) {
+		php_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
+		RETURN_NULL();
+	}
+
+	// no param, return all
+	if (ZEND_NUM_ARGS() == 0) {
+		RETURN_ZVAL(msg, 0, 1);
+	}
+
+	// foreach to get value
+	HashTable *hTable = Z_ARRVAL_P(msg);
+	zval **pData;
+
+	char *key;
+	uint key_len;
+	ulong idx;
+
+	while ( zend_hash_get_current_data(hTable, (void **) &pData) == SUCCESS ) {
+		zend_hash_get_current_key_ex(hTable, &key, &key_len, &idx, 0, NULL);
+
+		if (idx == Z_LVAL(code)) {
+			RETURN_STRING(Z_STRVAL_PP(pData), 1);
+			break;
+		}
+		zend_hash_move_forward(hTable);
+	}
+
+	RETURN_NULL();
+
+	/*
+	for (zend_hash_internal_pointer_reset(hTable);
+		 zend_hash_has_more_elements(hTable) == SUCCESS;
+		zend_hash_move_forward(hTable)) {
+		if ( zend_hash_get_current_data(hTable, (void **) &pData) == FAILURE ) {
+			continue;
+		}
+
+		switch (zend_hash_get_current_key_ex(hTable, &key, &key_len, &idx, 0, NULL));
+
+		if (idx == Z_LVAL(code)) {
+			php_printf("%s\n", Z_STRVAL_PP(pData));
+		}
+	}
+	*/
 }
 /* }}} */
 
@@ -143,7 +199,23 @@ PHP_METHOD(errs, get)
 */
 PHP_METHOD(errs, set)
 {
-	
+	ulong code;
+	char *value;
+	uint value_len;
+
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls", &code, &value, &value_len) == FAILURE ) {
+		return;
+	}
+
+    zval *msg = zend_read_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
+
+	add_index_stringl(msg, code, value, value_len, 1);
+
+	if (zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC) == SUCCESS) {
+		return SUCCESS;
+	}
+
+	RETURN_NULL
 }
 /* }}} */
 
@@ -169,7 +241,7 @@ PHP_MINIT_FUNCTION(pdoner)
 	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_EXCEP), PDONER_ERRS_EXCEP TSRMLS_CC);
 	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_UNKNOW), PDONER_ERRS_UNKNOW TSRMLS_CC);
 
-	zend_declare_property_null(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_null(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
 
 	return SUCCESS;
 }
