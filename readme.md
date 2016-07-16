@@ -12,7 +12,7 @@ $ make && sudo make install
 
 | name | explain
 |--- |---
-| `int pd_random_id([int $salt = 0])` | A random id based unix timestamp.
+| `int pd_random_id([int $salt = 0])` | a random id based unix timestamp.
 | `string pd_implode_json(array $arr [, string $glue = ','])` | array [1=>123,2=>456] to string [123,456] <br> glue can also be other character.
 
 ## Class
@@ -63,9 +63,10 @@ class Err
     }   
 }
 ````
-**explain**  
-
+explain:  
+````php
 $Errs = new Errs;  
 echo Errs::get(Errs::FAIL) . "\n";  
 Errs::set(6, '测试');  
 var_dump(Errs::get());  
+````
