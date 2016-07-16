@@ -17,8 +17,14 @@ $ make && sudo make install
 
 ## Class
 
-Error define.
-
+Error define; usage:
+````php
+$Errs = new Errs;  
+echo Errs::get(Errs::FAIL) . "\n";  
+Errs::set(6, '测试');  
+var_dump(Errs::get());  
+````
+reference:
 ````php
 class Err 
 {
@@ -62,11 +68,4 @@ class Err
         return false;  
     }   
 }
-````
-explain:  
-````php
-$Errs = new Errs;  
-echo Errs::get(Errs::FAIL) . "\n";  
-Errs::set(6, '测试');  
-var_dump(Errs::get());  
 ````
