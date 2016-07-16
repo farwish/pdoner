@@ -68,8 +68,8 @@ PHP_FUNCTION(pd_random_id)
 PHP_FUNCTION(pd_implode_json)
 {
 	zval *pieces, *glue = NULL;
-
 	zval function_name, *params[2] = {0};
+	zval *retval = NULL;
 
 	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|z", &pieces, &glue) == FAILURE ) {
 		RETURN_FALSE;
@@ -80,6 +80,10 @@ PHP_FUNCTION(pd_implode_json)
 	params[0] = pieces;
 
 	if (glue == NULL) {
+		// ZVAL_STRING() used when glue was a zval, not zval *	\
+			so under line will cause segmentfalut.
+		// ZVAL_STRING(glue, ",", 1);
+
 		MAKE_STD_ZVAL(glue);
 		Z_STRVAL_P(glue) = ",";
 		Z_STRLEN_P(glue) = strlen(",");
@@ -95,18 +99,45 @@ PHP_FUNCTION(pd_implode_json)
 		RETURN_FALSE;
 	}
 
-	// dtor after used.
-	ZVAL_NULL(glue);
-	zval_ptr_dtor(&glue);
+	/*
+	// this way will segmentfalut when pass the second param.
+	if (glue != NULL) {
+		ZVAL_NULL(glue);
+		zval_ptr_dtor(&glue);
+	}
+	*/
 
-	// one memory leak
+	// when passed the second param glue, if you forget dtor, segmentfault.
+	if (ZEND_NUM_ARGS() == 1) {
+		ZVAL_NULL(glue);
+		zval_ptr_dtor(&glue);
+	}
+	
 	zval op1, op2;
-	ZVAL_STRING(&op1, "[", 1);
-	ZVAL_STRING(&op2, "]", 1);
+	ZVAL_STRINGL(&op1, "[", 1, 1);
+	ZVAL_STRINGL(&op2, "]", 1, 1);
 
+	/*
+	// concat; way1
+	zval result;
+
+	concat_function(&result, &op1, return_value TSRMLS_CC);
+	concat_function(&result, &result, &op2 TSRMLS_CC);
+
+ 	// 1. zval_ptr_dtor(&return_value) was wrong.
+	// 2. forget zval_dtor(return_value) will cause memory leaks.
+	zval_dtor(return_value);
+
+	// copy result to return_value;
+	// if "zval result" is not zero-terminated, use ZVAL_ZVAL() instead.	\
+		PHP Warning:  String is not zero-terminated.
+	ZVAL_COPY_VALUE(return_value, &result);
+	*/
+	
+	// concat; way2
 	concat_function(&op1, &op1, return_value TSRMLS_CC);
 	concat_function(&op1, &op1, &op2 TSRMLS_CC);
-
+	zval_dtor(return_value);
 	ZVAL_ZVAL(return_value, &op1, 0, 1);
 
 	zval_dtor(&op1);
@@ -148,7 +179,7 @@ PHP_METHOD(errs, get)
 
 	// no instance
 	if (Z_ARRVAL_P(msg) == NULL) {
-		php_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
+		zend_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
 		RETURN_NULL();
 	}
 
@@ -207,15 +238,35 @@ PHP_METHOD(errs, set)
 		return;
 	}
 
+	// read property
     zval *msg = zend_read_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
 
-	add_index_stringl(msg, code, value, value_len, 1);
+	// if no instance
+	HashTable *hTable = Z_ARRVAL_P(msg);
 
-	if (zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC) == SUCCESS) {
-		return SUCCESS;
+	if (hTable == NULL) {
+		zend_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
+		RETURN_FALSE;
 	}
 
-	RETURN_NULL
+	// check is index exists
+	// int zend_hash_exists(const HashTable *ht, const char *arKey, uint nKeyLength)
+	if ( zend_hash_index_exists(hTable, code) ) {
+		zend_error(E_WARNING, "the code has exists in using %s::%s()!\n",	\
+			get_active_class_name(NULL TSRMLS_CC),	\
+			get_active_function_name(TSRMLS_C));	\
+		RETURN_FALSE;
+	}
+
+	// add value
+	add_index_stringl(msg, code, value, value_len, 1);
+
+	// update $msg
+	if ( zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC) == SUCCESS ) {
+		RETURN_TRUE;	
+	}
+
+	RETURN_FALSE;
 }
 /* }}} */
 
