@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: Wei Chen <farwish@foxmail.com>                               |
   +----------------------------------------------------------------------+
 */
 
@@ -20,6 +20,18 @@
 
 #ifndef PHP_PDONER_H
 #define PHP_PDONER_H
+
+#define PDONER_ERRS_CONSTANT_NAME_SUCC "SUCC"
+#define PDONER_ERRS_CONSTANT_NAME_FAIL "FAIL"
+#define PDONER_ERRS_CONSTANT_NAME_EXCEP "EXCEP"
+#define PDONER_ERRS_CONSTANT_NAME_UNKNOW "UNKNOW"
+
+#define PDONER_ERRS_SUCC 0
+#define PDONER_ERRS_FAIL 1
+#define PDONER_ERRS_EXCEP 2
+#define PDONER_ERRS_UNKNOW 3
+
+#define PDONER_ERRS_PROPERTY_NAME_MSG "msg"
 
 extern zend_module_entry pdoner_module_entry;
 #define phpext_pdoner_ptr &pdoner_module_entry
@@ -37,8 +49,6 @@ extern zend_module_entry pdoner_module_entry;
 #ifdef ZTS
 #include "TSRM.h"
 #endif
-
-PHP_FUNCTION(random_id);
 
 #ifdef ZTS
 #define PDONER_G(v) TSRMG(pdoner_globals_id, zend_pdoner_globals *, v)
