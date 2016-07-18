@@ -38,6 +38,17 @@ extern zend_module_entry pdoner_module_entry;
 
 #define PHP_PDONER_VERSION "0.1.0"
 
+PHP_MINIT_FUNCTION(pdoner);
+PHP_RINIT_FUNCTION(pdoner);
+PHP_RSHUTDOWN_FUNCTION(pdoner);
+PHP_MSHUTDOWN_FUNCTION(pdoner);
+PHP_MINFO_FUNCTION(pdoner);
+
+#define PDONER_STARTUP_FUNCTION(module)    ZEND_MINIT_FUNCTION(pdoner_##module)
+#define PDONER_STARTUP(module)             ZEND_MODULE_STARTUP_N(pdoner_##module)(INIT_FUNC_ARGS_PASSTHRU)
+#define PDONER_SHUTDOWN_FUNCTION(module)   ZEND_MSHUTDOWN_FUNCTION(pdoner_##module)
+#define PDONER_SHUTDOWN(module)            ZEND_MODULE_SHUTDOWN_N(pdoner_##module)(SHUTDOWN_FUNC_ARGS_PASSTHRU)
+
 #ifdef PHP_WIN32
 #	define PHP_PDONER_API __declspec(dllexport)
 #elif defined(__GNUC__) && __GNUC__ >= 4
