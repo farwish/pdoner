@@ -59,5 +59,7 @@ if test "$PHP_PDONER" != "no"; then
   dnl
   dnl PHP_SUBST(PDONER_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(pdoner, pdoner.c, $ext_shared)
+  PHP_NEW_EXTENSION(pdoner, 
+	pdoner.c							\
+	, $ext_shared)
 fi
