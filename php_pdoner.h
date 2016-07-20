@@ -21,6 +21,14 @@
 #ifndef PHP_PDONER_H
 #define PHP_PDONER_H
 
+/* global const {{{ */
+#define PD_ONE_MINUTE 60
+#define PD_ONE_HOUR 3600
+#define PD_BY_DAY (3600 * 12)
+#define PD_ONE_DAY (3600 * 24)
+/* }}} */
+
+/* Errs const {{{ */
 #define PDONER_ERRS_CONSTANT_NAME_SUCC "SUCC"
 #define PDONER_ERRS_CONSTANT_NAME_FAIL "FAIL"
 #define PDONER_ERRS_CONSTANT_NAME_EXCEP "EXCEP"
@@ -32,6 +40,7 @@
 #define PDONER_ERRS_UNKNOW 3
 
 #define PDONER_ERRS_PROPERTY_NAME_MSG "msg"
+/* }}} */
 
 extern zend_module_entry pdoner_module_entry;
 #define phpext_pdoner_ptr &pdoner_module_entry
