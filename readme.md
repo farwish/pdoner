@@ -8,6 +8,15 @@ $ ./configure --with-php-config=/path/php/bin/php-config
 $ make && sudo make install
 ````
 
+## global const
+
+| name | explain
+|--- |---
+| PD_ONE_MINUTE | 60
+| PD_ONE_HOUR | 3600
+| PD_BY_DAY | 3600*12
+| PD_ONE_DAY | 3600*24
+
 ## Function
 
 | name | explain
