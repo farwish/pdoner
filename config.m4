@@ -61,5 +61,6 @@ if test "$PHP_PDONER" != "no"; then
 
   PHP_NEW_EXTENSION(pdoner, 
 	pdoner.c							\
+	pdoner_conf.c						\
 	, $ext_shared)
 fi

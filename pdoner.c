@@ -27,6 +27,7 @@
 #include "ext/standard/info.h"
 
 #include "php_pdoner.h"
+#include "pdoner_conf.h"
 
 
 static int le_pdoner;
@@ -300,6 +301,9 @@ PHP_MINIT_FUNCTION(pdoner)
 	REGISTER_LONG_CONSTANT("PD_ONE_HOUR", PD_ONE_HOUR, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("PD_BY_DAY", PD_BY_DAY, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("PD_ONE_DAY", PD_ONE_DAY, CONST_CS | CONST_PERSISTENT);
+
+	/* startup component */
+	PDONER_STARTUP(conf);
 
 	return SUCCESS;
 }
