@@ -26,14 +26,15 @@ $ make && sudo make install
 
 ## Class
 
-Error define; usage:
+respond defined, usage:
 ````php
-$Errs = new Errs;  
-echo Errs::get(Errs::FAIL) . "\n";  
-Errs::set(6, '测试');  
-var_dump(Errs::get());  
+$Rp = new Rp;  
+echo Rp::get(Rp::FAIL) . "\n";  
+Rp::set(6, '测试');  
+var_dump(Rp::get());  
 ````
-reference:
+
+you can reference this:
 ````php
 class Err 
 {

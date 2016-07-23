@@ -21,25 +21,25 @@
 #ifndef PHP_PDONER_H
 #define PHP_PDONER_H
 
-/* global const {{{ */
+/* {{{ global const */
 #define PD_ONE_MINUTE 60
 #define PD_ONE_HOUR 3600
 #define PD_BY_DAY (3600 * 12)
 #define PD_ONE_DAY (3600 * 24)
 /* }}} */
 
-/* Errs const {{{ */
-#define PDONER_ERRS_CONSTANT_NAME_SUCC "SUCC"
-#define PDONER_ERRS_CONSTANT_NAME_FAIL "FAIL"
-#define PDONER_ERRS_CONSTANT_NAME_EXCEP "EXCEP"
-#define PDONER_ERRS_CONSTANT_NAME_UNKNOW "UNKNOW"
+/* {{{ Rp const */
+#define PDONER_RP_CONSTANT_NAME_SUCC "SUCC"
+#define PDONER_RP_CONSTANT_NAME_FAIL "FAIL"
+#define PDONER_RP_CONSTANT_NAME_EXCEP "EXCEP"
+#define PDONER_RP_CONSTANT_NAME_UNKNOW "UNKNOW"
 
-#define PDONER_ERRS_SUCC 0
-#define PDONER_ERRS_FAIL 1
-#define PDONER_ERRS_EXCEP 2
-#define PDONER_ERRS_UNKNOW 3
+#define PDONER_RP_SUCC 0
+#define PDONER_RP_FAIL 1
+#define PDONER_RP_EXCEP 2
+#define PDONER_RP_UNKNOW 3
 
-#define PDONER_ERRS_PROPERTY_NAME_MSG "msg"
+#define PDONER_RP_PROPERTY_NAME_MSG "msg"
 /* }}} */
 
 extern zend_module_entry pdoner_module_entry;
@@ -53,10 +53,12 @@ PHP_RSHUTDOWN_FUNCTION(pdoner);
 PHP_MSHUTDOWN_FUNCTION(pdoner);
 PHP_MINFO_FUNCTION(pdoner);
 
+/* {{{ custom startup funcs */
 #define PDONER_STARTUP_FUNCTION(module)    ZEND_MINIT_FUNCTION(pdoner_##module)
 #define PDONER_STARTUP(module)             ZEND_MODULE_STARTUP_N(pdoner_##module)(INIT_FUNC_ARGS_PASSTHRU)
 #define PDONER_SHUTDOWN_FUNCTION(module)   ZEND_MSHUTDOWN_FUNCTION(pdoner_##module)
 #define PDONER_SHUTDOWN(module)            ZEND_MODULE_SHUTDOWN_N(pdoner_##module)(SHUTDOWN_FUNC_ARGS_PASSTHRU)
+/* }}} */
 
 #ifdef PHP_WIN32
 #	define PHP_PDONER_API __declspec(dllexport)

@@ -33,15 +33,15 @@
 static int le_pdoner;
 
 
-zend_class_entry *errs_ce;
+zend_class_entry *rp_ce;
 
 /* {{{ ARG_INFO
 */
-ZEND_BEGIN_ARG_INFO_EX(errs_get_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(rp_get_arginfo, 0, 0, 0)
 	ZEND_ARG_INFO(0, code)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(errs_set_arginfo, 0, 0, 2)
+ZEND_BEGIN_ARG_INFO_EX(rp_set_arginfo, 0, 0, 2)
 	ZEND_ARG_INFO(0, code)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
@@ -147,27 +147,27 @@ PHP_FUNCTION(pd_implode_json)
 }
 /* }}} */
 
-/* {{{ proto public Errs::__construct(void) */
-PHP_METHOD(errs, __construct)
+/* {{{ proto public Rp::__construct(void) */
+PHP_METHOD(rp, __construct)
 {
 	zval *msg;
 	MAKE_STD_ZVAL(msg);	
 	array_init(msg);
 
-	add_index_string(msg, PDONER_ERRS_SUCC, "成功", 1);
-	add_index_string(msg, PDONER_ERRS_FAIL, "失败", 1);
-	add_index_string(msg, PDONER_ERRS_EXCEP, "异常", 1);
-	add_index_string(msg, PDONER_ERRS_UNKNOW, "未知", 1);
+	add_index_string(msg, PDONER_RP_SUCC, "成功", 1);
+	add_index_string(msg, PDONER_RP_FAIL, "失败", 1);
+	add_index_string(msg, PDONER_RP_EXCEP, "异常", 1);
+	add_index_string(msg, PDONER_RP_UNKNOW, "未知", 1);
 
-	zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC);
+	zend_update_static_property(rp_ce, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), msg TSRMLS_CC);
 
 	zval_ptr_dtor(&msg);
 }
 /* }}} */
 
-/* {{{ proto public static Errs::get([int $code])
+/* {{{ proto public static Rp::get([int $code])
 */
-PHP_METHOD(errs, get)
+PHP_METHOD(rp, get)
 {
 	zval code;
 	zval *msg = NULL;
@@ -177,11 +177,11 @@ PHP_METHOD(errs, get)
 	}
 
 	// read property
-	msg = zend_read_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
+	msg = zend_read_static_property(rp_ce, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
 
 	// no instance
 	if (Z_ARRVAL_P(msg) == NULL) {
-		zend_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
+		zend_error(E_WARNING, "please new Rp instance before use, for property will initialized in construct!\n");
 		RETURN_NULL();
 	}
 
@@ -228,9 +228,9 @@ PHP_METHOD(errs, get)
 }
 /* }}} */
 
-/* {{{ proto public static Errs::set(int $code, string $value) 
+/* {{{ proto public static Rp::set(int $code, string $value) 
 */
-PHP_METHOD(errs, set)
+PHP_METHOD(rp, set)
 {
 	ulong code;
 	char *value;
@@ -241,13 +241,13 @@ PHP_METHOD(errs, set)
 	}
 
 	// read property
-    zval *msg = zend_read_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
+    zval *msg = zend_read_static_property(rp_ce, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
 
 	// if no instance
 	HashTable *hTable = Z_ARRVAL_P(msg);
 
 	if (hTable == NULL) {
-		zend_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
+		zend_error(E_WARNING, "please new Rp instance before use, for property will initialized in construct!\n");
 		RETURN_FALSE;
 	}
 
@@ -264,7 +264,7 @@ PHP_METHOD(errs, set)
 	add_index_stringl(msg, code, value, value_len, 1);
 
 	// update $msg
-	if ( zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC) == SUCCESS ) {
+	if ( zend_update_static_property(rp_ce, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), msg TSRMLS_CC) == SUCCESS ) {
 		RETURN_TRUE;	
 	}
 
@@ -272,11 +272,11 @@ PHP_METHOD(errs, set)
 }
 /* }}} */
 
-/* {{{ Errs_methods */
-zend_function_entry errs_methods[] = {
-	PHP_ME(errs, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-	PHP_ME(errs, get, errs_get_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(errs, set, errs_set_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+/* {{{ Rp_methods */
+zend_function_entry rp_methods[] = {
+	PHP_ME(rp, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	PHP_ME(rp, get, rp_get_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(rp, set, rp_set_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -286,15 +286,15 @@ zend_function_entry errs_methods[] = {
 PHP_MINIT_FUNCTION(pdoner)
 {
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "errs", errs_methods);	
-	errs_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	INIT_CLASS_ENTRY(ce, "rp", rp_methods);	
+	rp_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_SUCC), PDONER_ERRS_SUCC TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_FAIL), PDONER_ERRS_FAIL TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_EXCEP), PDONER_ERRS_EXCEP TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_UNKNOW), PDONER_ERRS_UNKNOW TSRMLS_CC);
+	zend_declare_class_constant_long(rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_SUCC), PDONER_RP_SUCC TSRMLS_CC);
+	zend_declare_class_constant_long(rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_FAIL), PDONER_RP_FAIL TSRMLS_CC);
+	zend_declare_class_constant_long(rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_EXCEP), PDONER_RP_EXCEP TSRMLS_CC);
+	zend_declare_class_constant_long(rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_UNKNOW), PDONER_RP_UNKNOW TSRMLS_CC);
 
-	zend_declare_property_null(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(rp_ce, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
 
 	/* global const */
 	REGISTER_LONG_CONSTANT("PD_ONE_MINUTE", PD_ONE_MINUTE, CONST_CS | CONST_PERSISTENT);
