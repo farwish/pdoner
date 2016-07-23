@@ -37,19 +37,14 @@ zend_class_entry *rp_ce;
 
 /* {{{ ARG_INFO
 */
-ZEND_BEGIN_ARG_INFO_EX(rp_magic_get_arginfo, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(rp_magic_get_arginfo, 0, 0, 1)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
-/*
-ZEND_BEGIN_ARG_INFO_EX(rp_get_arginfo, 0, 0, 0)
-	ZEND_ARG_INFO(0, code)
-ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(rp_set_arginfo, 0, 0, 2)
-	ZEND_ARG_INFO(0, code)
-	ZEND_ARG_INFO(0, value)
+ZEND_BEGIN_ARG_INFO_EX(rp_magic_set_arginfo, 0, 0, 2)
+	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, val)
 ZEND_END_ARG_INFO()
-*/
 /* }}} */
 
 /* {{{ proto int pd_random_id([int $salt = 0])
@@ -173,11 +168,12 @@ PHP_METHOD(rp, __construct)
 }
 /* }}} */
 
+/* {{{ proto void public Rp::__get($name) */
 PHP_METHOD(rp, __get)
 {
 	zval *name, *msg, *pThis = getThis();
 
-	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|z", &name) == FAILURE ) {
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &name) == FAILURE ) {
 		return;
 	}
 
@@ -188,12 +184,7 @@ PHP_METHOD(rp, __get)
 
 	zval idx;
 
-	//char *key;
-	//uint key_len;
-	//ulong idx;
-
 	while ( zend_hash_get_current_data(hTable, (void **) &pData) == SUCCESS ) {
-		//zend_hash_get_current_key_ex(hTable, &key, &key_len, &idx, 0, NULL);
 		zend_hash_get_current_key_zval_ex(hTable, &idx, NULL);
 
 		if ( strcasecmp( Z_STRVAL(idx), Z_STRVAL_P(name) ) == 0) {
@@ -212,70 +203,13 @@ PHP_METHOD(rp, __get)
 
 	RETURN_NULL();
 }
+/* }}} */
 
-/* {{{ proto public static Rp::get([int $code])
-*/
-//PHP_METHOD(rp, get)
-//{
-/*
-	zval code;
-	zval *msg = NULL;
-
-	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &code) == FAILURE ) {
-		return;
-	}
-
-	// read property
-	msg = zend_read_static_property(rp_ce, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
-
-	// no instance
-	if (Z_ARRVAL_P(msg) == NULL) {
-		zend_error(E_WARNING, "please new Rp instance before use, for property will initialized in construct!\n");
-		RETURN_NULL();
-	}
-
-	// no param, return all
-	if (ZEND_NUM_ARGS() == 0) {
-		RETURN_ZVAL(msg, 0, 1);
-	}
-
-	// foreach to get value
-	HashTable *hTable = Z_ARRVAL_P(msg);
-	zval **pData;
-
-	char *key;
-	uint key_len;
-	ulong idx;
-
-	while ( zend_hash_get_current_data(hTable, (void **) &pData) == SUCCESS ) {
-		zend_hash_get_current_key_ex(hTable, &key, &key_len, &idx, 0, NULL);
-
-		if (idx == Z_LVAL(code)) {
-			RETURN_STRING(Z_STRVAL_PP(pData), 1);
-			break;
-		}
-		zend_hash_move_forward(hTable);
-	}
-
-	RETURN_NULL();
-*/
-
-	/*
-	for (zend_hash_internal_pointer_reset(hTable);
-		 zend_hash_has_more_elements(hTable) == SUCCESS;
-		zend_hash_move_forward(hTable)) {
-		if ( zend_hash_get_current_data(hTable, (void **) &pData) == FAILURE ) {
-			continue;
-		}
-
-		switch (zend_hash_get_current_key_ex(hTable, &key, &key_len, &idx, 0, NULL));
-
-		if (idx == Z_LVAL(code)) {
-			php_printf("%s\n", Z_STRVAL_PP(pData));
-		}
-	}
-	*/
-//}
+/* {{{ proto void public Rp::__set($name, $val) */
+PHP_METHOD(rp, __set)
+{
+	
+}
 /* }}} */
 
 /* {{{ proto public static Rp::set(int $code, string $value) 
@@ -328,6 +262,7 @@ PHP_METHOD(rp, set)
 zend_function_entry rp_methods[] = {
 	PHP_ME(rp, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(rp, __get, rp_magic_get_arginfo, ZEND_ACC_PUBLIC)
+	PHP_ME(rp, __set, rp_magic_set_arginfo, ZEND_ACC_PUBLIC)
 	//PHP_ME(rp, get, rp_get_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	//PHP_ME(rp, set, rp_set_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
