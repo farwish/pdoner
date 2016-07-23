@@ -4,7 +4,7 @@
 
 > two functions & Errs class defined.  
 
-*16/7/23 v0.1.1  
+*16/7/23 develop 
 
 > Errs to Rp, means respond.
 
