@@ -25,22 +25,28 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+
 #include "php_pdoner.h"
+#include "pdoner_conf.h"
 
 
 static int le_pdoner;
 
 
-zend_class_entry *errs_ce;
+zend_class_entry *pdoner_rp_ce;
 
 /* {{{ ARG_INFO
 */
-ZEND_BEGIN_ARG_INFO_EX(errs_get_arginfo, 0, 0, 0)
-	ZEND_ARG_INFO(0, code)
+ZEND_BEGIN_ARG_INFO_EX(pdoner_rp_get_arginfo, 0, 0, 1)
+	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(errs_set_arginfo, 0, 0, 2)
-	ZEND_ARG_INFO(0, code)
+ZEND_BEGIN_ARG_INFO_EX(pdoner_rp_has_arginfo, 0, 0, 1)
+	ZEND_ARG_INFO(0, name)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(pdoner_rp_set_arginfo, 0, 0, 2)
+	ZEND_ARG_INFO(0, name)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 /* }}} */
@@ -145,136 +151,145 @@ PHP_FUNCTION(pd_implode_json)
 }
 /* }}} */
 
-/* {{{ proto public Errs::__construct(void) */
-PHP_METHOD(errs, __construct)
+/* {{{ proto public Rp::__construct(void) 
+*/
+PHP_METHOD(rp, __construct)
 {
-	zval *msg;
+	zval *msg, *pThis = getThis();
 	MAKE_STD_ZVAL(msg);	
 	array_init(msg);
 
-	add_index_string(msg, PDONER_ERRS_SUCC, "成功", 1);
-	add_index_string(msg, PDONER_ERRS_FAIL, "失败", 1);
-	add_index_string(msg, PDONER_ERRS_EXCEP, "异常", 1);
-	add_index_string(msg, PDONER_ERRS_UNKNOW, "未知", 1);
+	add_assoc_string_ex(msg, PDONER_RP_CONSTANT_NAME_SUCC, sizeof(PDONER_RP_CONSTANT_NAME_SUCC) + 1, "成功", 1);
+	add_assoc_string_ex(msg, PDONER_RP_CONSTANT_NAME_FAIL, sizeof(PDONER_RP_CONSTANT_NAME_FAIL) + 1, "失败", 1);
+	add_assoc_string_ex(msg, PDONER_RP_CONSTANT_NAME_EXCEP, sizeof(PDONER_RP_CONSTANT_NAME_EXCEP) + 1, "异常", 1);
+	add_assoc_string_ex(msg, PDONER_RP_CONSTANT_NAME_UNKNOW, sizeof(PDONER_RP_CONSTANT_NAME_UNKNOW) + 1, "未知", 1);
 
-	zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC);
+	zend_update_property(pdoner_rp_ce, pThis, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), msg TSRMLS_CC);
+
+	// if not declare msg in MINIT, you can add property like this:
+	//add_property_zval_ex(getThis(), ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), msg TSRMLS_CC);
 
 	zval_ptr_dtor(&msg);
 }
 /* }}} */
 
-/* {{{ proto public static Errs::get([int $code])
+/* {{{ proto void public Rp::get($name) 
 */
-PHP_METHOD(errs, get)
+PHP_METHOD(rp, get)
 {
-	zval code;
-	zval *msg = NULL;
+	zval *name, *msg, *pThis = getThis();
 
-	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &code) == FAILURE ) {
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &name) == FAILURE ) {
 		return;
 	}
 
-	// read property
-	msg = zend_read_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
-
-	// no instance
-	if (Z_ARRVAL_P(msg) == NULL) {
-		zend_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
-		RETURN_NULL();
-	}
-
-	// no param, return all
-	if (ZEND_NUM_ARGS() == 0) {
-		RETURN_ZVAL(msg, 0, 1);
-	}
-
-	// foreach to get value
+	msg = zend_read_property(pdoner_rp_ce, pThis, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), 1 TSRMLS_CC);
+	
 	HashTable *hTable = Z_ARRVAL_P(msg);
 	zval **pData;
 
-	char *key;
-	uint key_len;
-	ulong idx;
+	char *string;
+	ulong index;
 
-	while ( zend_hash_get_current_data(hTable, (void **) &pData) == SUCCESS ) {
-		zend_hash_get_current_key_ex(hTable, &key, &key_len, &idx, 0, NULL);
-
-		if (idx == Z_LVAL(code)) {
-			RETURN_STRING(Z_STRVAL_PP(pData), 1);
-			break;
+	for (zend_hash_internal_pointer_reset(hTable);
+		zend_hash_has_more_elements(hTable) == SUCCESS;
+		zend_hash_move_forward(hTable)
+	) {
+		switch (zend_hash_get_current_key(hTable, &string, &index, 0)) {
+			case HASH_KEY_IS_LONG:
+				break;
+			case HASH_KEY_IS_STRING:
+				if (strcasecmp(string, Z_STRVAL_P(name)) == 0) {
+					if (zend_hash_get_current_data(hTable, (void **) &pData) == SUCCESS) {
+						RETURN_STRING(Z_STRVAL_PP(pData), 1);
+					}
+				}
+				break;
+			default:
+				RETURN_NULL();
 		}
-		zend_hash_move_forward(hTable);
 	}
 
 	RETURN_NULL();
-
-	/*
-	for (zend_hash_internal_pointer_reset(hTable);
-		 zend_hash_has_more_elements(hTable) == SUCCESS;
-		zend_hash_move_forward(hTable)) {
-		if ( zend_hash_get_current_data(hTable, (void **) &pData) == FAILURE ) {
-			continue;
-		}
-
-		switch (zend_hash_get_current_key_ex(hTable, &key, &key_len, &idx, 0, NULL));
-
-		if (idx == Z_LVAL(code)) {
-			php_printf("%s\n", Z_STRVAL_PP(pData));
-		}
-	}
-	*/
 }
 /* }}} */
 
-/* {{{ proto public static Errs::set(int $code, string $value) 
+/* {{{ proto mixed public Rp::has(string $name)
 */
-PHP_METHOD(errs, set)
+PHP_METHOD(rp, has)
 {
-	ulong code;
-	char *value;
-	uint value_len;
+	char *name;
+	uint len;
 
-	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls", &code, &value, &value_len) == FAILURE ) {
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &len) == FAILURE ) {
 		return;
 	}
 
-	// read property
-    zval *msg = zend_read_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), 0 TSRMLS_CC);
+	zval *msg = zend_read_property(pdoner_rp_ce, getThis(), ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), 1 TSRMLS_CC);
 
-	// if no instance
+	// below, can not get the correct results, dont know why!?
+	// RETURN_LONG(zend_hash_exists(Z_ARRVAL_P(msg), name, len + 1));
+
+	char *string;
+	ulong index;
+
 	HashTable *hTable = Z_ARRVAL_P(msg);
-
-	if (hTable == NULL) {
-		zend_error(E_WARNING, "please new Errs instance before use, for property will initialized in construct!\n");
-		RETURN_FALSE;
+	for (zend_hash_internal_pointer_reset(hTable);
+		zend_hash_has_more_elements(hTable) == SUCCESS;
+		zend_hash_move_forward(hTable)
+	) {
+		switch (zend_hash_get_current_key(hTable, &string, &index, 0)) {
+			case HASH_KEY_IS_LONG:
+				RETURN_LONG(index);
+				break;
+			case HASH_KEY_IS_STRING:
+				if (strcasecmp(name, string) == 0) {
+					RETURN_STRING(string, 1);
+				}
+				break;
+			default:
+				RETURN_FALSE;
+		}
 	}
-
-	// check is index exists
-	// int zend_hash_exists(const HashTable *ht, const char *arKey, uint nKeyLength)
-	if ( zend_hash_index_exists(hTable, code) ) {
-		zend_error(E_WARNING, "the code has exists in using %s::%s()!\n",	\
-			get_active_class_name(NULL TSRMLS_CC),	\
-			get_active_function_name(TSRMLS_C));	\
-		RETURN_FALSE;
-	}
-
-	// add value
-	add_index_stringl(msg, code, value, value_len, 1);
-
-	// update $msg
-	if ( zend_update_static_property(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), msg TSRMLS_CC) == SUCCESS ) {
-		RETURN_TRUE;	
-	}
-
-	RETURN_FALSE;
 }
 /* }}} */
 
-/* {{{ Errs_methods */
-zend_function_entry errs_methods[] = {
-	PHP_ME(errs, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-	PHP_ME(errs, get, errs_get_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(errs, set, errs_set_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+/* {{{ proto bool public Rp::set(string $name, string $value) 
+*/
+PHP_METHOD(rp, set)
+{
+	char *name;
+	uint name_len;
+	char *value;
+	uint value_len;
+
+	if ( zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &name, &name_len, &value, &value_len) == FAILURE ) {
+		return;
+	}
+
+	zval *msg = zend_read_property(pdoner_rp_ce, getThis(), ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), 1 TSRMLS_CC);
+
+	// check exists
+
+	// add value
+	add_assoc_stringl_ex(msg, name, name_len + 1, value, value_len, 1);
+
+	// update property
+	zend_update_property(pdoner_rp_ce, getThis(), ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), msg TSRMLS_CC);
+
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ Rp_methods 
+*/
+zend_function_entry rp_methods[] = {
+	PHP_ME(rp, __construct, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	PHP_ME(rp, get, pdoner_rp_get_arginfo, ZEND_ACC_PUBLIC)
+	PHP_ME(rp, has, pdoner_rp_has_arginfo, ZEND_ACC_PUBLIC)
+	PHP_ME(rp, set, pdoner_rp_set_arginfo, ZEND_ACC_PUBLIC)
+	PHP_MALIAS(rp, __get, get, pdoner_rp_get_arginfo, ZEND_ACC_PUBLIC)
+	PHP_MALIAS(rp, __set, set, pdoner_rp_set_arginfo, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -284,15 +299,24 @@ zend_function_entry errs_methods[] = {
 PHP_MINIT_FUNCTION(pdoner)
 {
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "errs", errs_methods);	
-	errs_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	INIT_CLASS_ENTRY(ce, "rp", rp_methods);	
+	pdoner_rp_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_SUCC), PDONER_ERRS_SUCC TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_FAIL), PDONER_ERRS_FAIL TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_EXCEP), PDONER_ERRS_EXCEP TSRMLS_CC);
-	zend_declare_class_constant_long(errs_ce, ZEND_STRL(PDONER_ERRS_CONSTANT_NAME_UNKNOW), PDONER_ERRS_UNKNOW TSRMLS_CC);
+	zend_declare_class_constant_long(pdoner_rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_SUCC), PDONER_RP_SUCC TSRMLS_CC);
+	zend_declare_class_constant_long(pdoner_rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_FAIL), PDONER_RP_FAIL TSRMLS_CC);
+	zend_declare_class_constant_long(pdoner_rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_EXCEP), PDONER_RP_EXCEP TSRMLS_CC);
+	zend_declare_class_constant_long(pdoner_rp_ce, ZEND_STRL(PDONER_RP_CONSTANT_NAME_UNKNOW), PDONER_RP_UNKNOW TSRMLS_CC);
 
-	zend_declare_property_null(errs_ce, ZEND_STRL(PDONER_ERRS_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC|ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_null(pdoner_rp_ce, ZEND_STRL(PDONER_RP_PROPERTY_NAME_MSG), ZEND_ACC_PUBLIC TSRMLS_CC);
+
+	/* global const */
+	REGISTER_LONG_CONSTANT("PD_ONE_MINUTE", PD_ONE_MINUTE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PD_ONE_HOUR", PD_ONE_HOUR, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PD_BY_DAY", PD_BY_DAY, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PD_ONE_DAY", PD_ONE_DAY, CONST_CS | CONST_PERSISTENT);
+
+	/* startup component */
+	PDONER_STARTUP(conf);
 
 	return SUCCESS;
 }

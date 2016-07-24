@@ -8,6 +8,15 @@ $ ./configure --with-php-config=/path/php/bin/php-config
 $ make && sudo make install
 ````
 
+## global const
+
+| name | explain
+|--- |---
+| PD_ONE_MINUTE | 60
+| PD_ONE_HOUR | 3600
+| PD_BY_DAY | 3600*12
+| PD_ONE_DAY | 3600*24
+
 ## Function
 
 | name | explain
@@ -17,14 +26,32 @@ $ make && sudo make install
 
 ## Class
 
-Error define; usage:
+respond defined;  
+APIs and usage:  
 ````php
-$Errs = new Errs;  
-echo Errs::get(Errs::FAIL) . "\n";  
-Errs::set(6, '测试');  
-var_dump(Errs::get());  
+$Rp = new Rp;
+echo Rp::SUCC . "\n";  // 0
+echo $Rp->SUCC . "\n"; // 成功
+echo $Rp->get('SUCC') . "\n"; // 成功
+
+if (! $Rp->has('SUCC')) {
+	define('SUCC', 0);
+	$Rp->SUCC = '成功';
+}
+
+$Rp->TEST = '测试';
+$Rp->set('TEST2', '测试2');
+
+print_r($Rp);
 ````
-reference:
+
+how to extend:  
+````php
+define('TEST', 4);
+$Rp->TEST = '测试';
+````
+
+you can reference this:  
 ````php
 class Err 
 {
@@ -33,39 +60,27 @@ class Err
     const EXCEP = 2;
     const UNKNOW = 3;
 
-    public static $msg = NULL;
+    public $msg = NULL;
 
     public function __construct() {
-        self::$msg[self::SUCC] = '成功';
-        self::$msg[self::FAIL] = '失败';
-        self::$msg[self::EXCEP] = '异常';
-        self::$msg[self::UNKNOW] = '未知';
+        $this->msg['SUCC'] = '成功';
+        $this->msg['FAIL'] = '失败';
+        $this->msg['EXCEP'] = '异常';
+        $this->msg['UNKNOW'] = '未知';
     }   
 
-    public static function get($code = "") 
-    {   
-		if (! self::$msg) {  
-			trigger_error("please new Errs instance before use, for property will initialized in construct!\n", E_USER_WARNING);  
-			return NULL;  
-		}  
+	public function __get($name) {
+		return $this->msg[$name];
+	}
 
-        return $code ? self::$msg[$code] : self::$msg;  
-    }   
+	public function has($name) {
+		return $this->msg[$name] ?: false;
+	}
 
-    public static function set($code, $value)
-    {   
-		if (! self::$msg) {  
-			trigger_error("please new Errs instance before use, for property will initialized in construct!\n", E_USER_WARNING);  
-			return false;  
-		}
+	public function __set($name, $val) {
+		$this->msg[$name] = $val;
 
-        if (isset(self::$msg[$code])) {  
-			trigger_error("the code has exists in using " . __CLASS__ . "::" . __FUNCTION__ . "()!\n" , E_USER_WARNING);  
-		} else if (self::$msg[$code] = $value) {  
-			return true;  
-		}  
-
-        return false;  
-    }   
+		return true;
+	}
 }
 ````
