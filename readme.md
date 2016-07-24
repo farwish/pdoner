@@ -26,20 +26,32 @@ $ make && sudo make install
 
 ## Class
 
-respond defined, usage:  
+respond defined;  
+APIs and usage:  
 ````php
 $Rp = new Rp;
-echo Rp::FAIL . "\n";
-echo $Rp->FAIL;
+echo Rp::SUCC . "\n";  // 0
+echo $Rp->SUCC . "\n"; // 成功
+echo $Rp->get('SUCC') . "\n"; // 成功
+
+if (! $Rp->has('SUCC')) {
+	define('SUCC', 0);
+	$Rp->SUCC = '成功';
+}
+
+$Rp->TEST = '测试';
+$Rp->set('TEST2', '测试2');
+
+print_r($Rp);
 ````
 
 how to extend:  
-```
-const TEST = 4;
+````php
+define('TEST', 4);
 $Rp->TEST = '测试';
-```
+````
 
-you can reference this:
+you can reference this:  
 ````php
 class Err 
 {
@@ -61,11 +73,11 @@ class Err
 		return $this->msg[$name];
 	}
 
-	public function __set($name, $val) {
-		if ( isset($this->msg[$name]) ) {
-			trigger_error($name . " has defined.\n", E_USER_WARNING);
-		}
+	public function has($name) {
+		return $this->msg[$name] ?: false;
+	}
 
+	public function __set($name, $val) {
 		$this->msg[$name] = $val;
 
 		return true;

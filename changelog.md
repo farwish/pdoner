@@ -1,11 +1,11 @@
 # changelog
 
-*16/7/16 v0.1.0  
+* 16/7/16 0.1.0  
 
-> two functions & Errs class defined.  
+> Two basic functions and Errs class defined.  
 
-*16/7/23 develop 
+* 16/7/24 0.1.1  
 
-> Errs to Rp, means respond.
+> Rename Errs to Rp, that means respond; and support has(),__get(),__set().  
 
-> four global const defined.  
+> Four global const defined.  
