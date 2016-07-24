@@ -45,7 +45,7 @@
 extern zend_module_entry pdoner_module_entry;
 #define phpext_pdoner_ptr &pdoner_module_entry
 
-#define PHP_PDONER_VERSION "0.1.0"
+#define PHP_PDONER_VERSION "0.1.1"
 
 PHP_MINIT_FUNCTION(pdoner);
 PHP_RINIT_FUNCTION(pdoner);
