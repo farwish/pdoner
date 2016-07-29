@@ -3,10 +3,12 @@
 ## Running
 
 ````shell
-$ phpize
+$ cd pdoner/
+$ /path/php/bin/phpize
 $ ./configure --with-php-config=/path/php/bin/php-config
 $ make && sudo make install
 ````
+`vi php.ini` 加上 `extension=pdoner.so` 重启php.  
 
 ## global const
 
