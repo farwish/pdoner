@@ -35,7 +35,7 @@ PDONER_STARTUP_FUNCTION(conf) {
 	zend_class_entry ce;
 
 	/* init class entry */
-	INIT_CLASS_ENTRY(ce, "Pd_Conf", pdoner_conf_methods);
+	INIT_CLASS_ENTRY(ce, "Pdconf", pdoner_conf_methods);
 
 	/* register */
 	pdoner_conf_ce = zend_register_internal_class(&ce TSRMLS_CC);

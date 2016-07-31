@@ -21,6 +21,29 @@
 #ifndef PHP_PDONER_H
 #define PHP_PDONER_H
 
+extern zend_module_entry pdoner_module_entry;
+#define phpext_pdoner_ptr &pdoner_module_entry
+
+#ifdef PHP_WIN32
+#	define PHP_PDONER_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_PDONER_API __attribute__ ((visibility("default")))
+#else
+#	define PHP_PDONER_API
+#endif
+
+#ifdef ZTS
+#include "TSRM.h"
+#endif
+
+#ifdef ZTS
+#define PDONER_G(v) TSRMG(pdoner_globals_id, zend_pdoner_globals *, v)
+#else
+#define PDONER_G(v) (pdoner_globals.v)
+#endif
+
+#define PHP_PDONER_VERSION "0.1.1"
+
 /* {{{ global const */
 #define PD_ONE_MINUTE 60
 #define PD_ONE_HOUR 3600
@@ -42,11 +65,6 @@
 #define PDONER_RP_PROPERTY_NAME_MSG "msg"
 /* }}} */
 
-extern zend_module_entry pdoner_module_entry;
-#define phpext_pdoner_ptr &pdoner_module_entry
-
-#define PHP_PDONER_VERSION "0.1.1"
-
 PHP_MINIT_FUNCTION(pdoner);
 PHP_RINIT_FUNCTION(pdoner);
 PHP_RSHUTDOWN_FUNCTION(pdoner);
@@ -60,23 +78,11 @@ PHP_MINFO_FUNCTION(pdoner);
 #define PDONER_SHUTDOWN(module)            ZEND_MODULE_SHUTDOWN_N(pdoner_##module)(SHUTDOWN_FUNC_ARGS_PASSTHRU)
 /* }}} */
 
-#ifdef PHP_WIN32
-#	define PHP_PDONER_API __declspec(dllexport)
-#elif defined(__GNUC__) && __GNUC__ >= 4
-#	define PHP_PDONER_API __attribute__ ((visibility("default")))
-#else
-#	define PHP_PDONER_API
-#endif
+ZEND_BEGIN_MODULE_GLOBALS(pdoner)
+	char *directory;
+ZEND_END_MODULE_GLOBALS(pdoner)
 
-#ifdef ZTS
-#include "TSRM.h"
-#endif
-
-#ifdef ZTS
-#define PDONER_G(v) TSRMG(pdoner_globals_id, zend_pdoner_globals *, v)
-#else
-#define PDONER_G(v) (pdoner_globals.v)
-#endif
+extern ZEND_DECLARE_MODULE_GLOBALS(pdoner);
 
 #endif
 

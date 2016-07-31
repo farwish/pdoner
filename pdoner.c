@@ -29,6 +29,7 @@
 #include "php_pdoner.h"
 #include "pdoner_conf.h"
 
+ZEND_DECLARE_MODULE_GLOBALS(pdoner);
 
 static int le_pdoner;
 
@@ -294,10 +295,27 @@ zend_function_entry rp_methods[] = {
 };
 /* }}} */
 
+/* {{{ PHP_INI
+*/
+PHP_INI_BEGIN()
+	STD_PHP_INI_ENTRY("pdoner.directory", "", PHP_INI_SYSTEM, OnUpdateString, directory, zend_pdoner_globals, pdoner_globals)
+PHP_INI_END()
+/* }}} */
+
+/* {{{ PHP_GINIT_FUNCTION
+*/
+PHP_GINIT_FUNCTION(pdoner)
+{
+	pdoner_globals->directory = NULL;
+}
+/* }}} */
+
 /* {{{ PHP_MINIT_FUNCTION
 */
 PHP_MINIT_FUNCTION(pdoner)
 {
+	REGISTER_INI_ENTRIES();
+
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "rp", rp_methods);	
 	pdoner_rp_ce = zend_register_internal_class(&ce TSRMLS_CC);
@@ -326,6 +344,7 @@ PHP_MINIT_FUNCTION(pdoner)
 */
 PHP_MSHUTDOWN_FUNCTION(pdoner)
 {
+	UNREGISTER_INI_ENTRIES();
 	return SUCCESS;
 }
 /* }}} */
@@ -355,6 +374,7 @@ PHP_MINFO_FUNCTION(pdoner)
 	php_info_print_table_row(2, "pdoner version", PHP_PDONER_VERSION);
 	php_info_print_table_end();
 
+	DISPLAY_INI_ENTRIES();
 }
 /* }}} */
 
@@ -379,7 +399,11 @@ zend_module_entry pdoner_module_entry = {
 	PHP_RSHUTDOWN(pdoner),
 	PHP_MINFO(pdoner),
 	PHP_PDONER_VERSION,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(pdoner),
+	PHP_GINIT(pdoner),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
 
