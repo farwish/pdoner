@@ -74,6 +74,7 @@ PHP_MINFO_FUNCTION(pdoner);
 /* {{{ custom startup funcs */
 #define PDONER_STARTUP_FUNCTION(module)    ZEND_MINIT_FUNCTION(pdoner_##module)
 #define PDONER_STARTUP(module)             ZEND_MODULE_STARTUP_N(pdoner_##module)(INIT_FUNC_ARGS_PASSTHRU)
+#define PDONER_RINIT_FUNCTION(module)      ZEND_RINIT_FUNCTION(pdoner_##module)
 #define PDONER_SHUTDOWN_FUNCTION(module)   ZEND_MSHUTDOWN_FUNCTION(pdoner_##module)
 #define PDONER_SHUTDOWN(module)            ZEND_MODULE_SHUTDOWN_N(pdoner_##module)(SHUTDOWN_FUNC_ARGS_PASSTHRU)
 /* }}} */
