@@ -32,6 +32,14 @@ zend_function_entry pdoner_conf_methods[] = {
 	{NULL, NULL, NULL}
 };
 
+/*
+static void pdoner_conf_hash_init(zval *zv, size_t size)
+{
+	HashTable *hTable;
+	zend_hash_init(hTable, size, NULL, NULL, 1);
+}
+*/
+
 PDONER_STARTUP_FUNCTION(conf)
 {
 	zend_class_entry ce;
@@ -51,6 +59,7 @@ PDONER_STARTUP_FUNCTION(conf)
 	int num, i;
 	char *p, ini_file[MAXPATHLEN];
 	zend_file_handle fh; // zend_parse_ini_file
+	zval result;
 
 	path = PDONER_G(directory);
 
@@ -73,6 +82,12 @@ PDONER_STARTUP_FUNCTION(conf)
 					fh.filename = ini_file;
 					fh.type = ZEND_HANDLE_FP;
 
+
+					HashTable *hTable;
+					zend_hash_init(hTable, 128, NULL, NULL, 1);
+					Z_ARRVAL(result, hTable);
+
+					
 				}
 			}
 		} else {
